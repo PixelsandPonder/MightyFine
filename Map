@@ -1,0 +1,3974 @@
+<html>
+<head>
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.52.0/mapbox-gl.css' rel='stylesheet' />
+<link href='https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,700' rel='stylesheet'>
+</head>
+
+<div class='sidebar pad2'>Listing</div>
+<div id='map' class='map pad2'></div>
+<div class='sidebar'>
+  <div class='heading'>
+    <h1>OUR LOCATIONS</h1>
+  </div>
+  <div id='listings' class='listings'></div>
+</div>
+
+<style>
+
+
+        body {
+          color:#404040;
+          font:400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+          margin:0;
+          padding:0;
+          -webkit-font-smoothing:antialiased;
+        }
+
+        * {
+          -webkit-box-sizing:border-box;
+          -moz-box-sizing:border-box;
+          box-sizing:border-box;
+        }
+
+        .sidebar {
+          position:absolute;
+          width:33.3333%;
+          height:100%;
+          top:0;left:0;
+          overflow:hidden;
+          border-right:1px solid rgba(0,0,0,0.25);
+        }
+        .pad2 {
+          padding:20px;
+        }
+
+        .map {
+          position:absolute;
+          left:33.3333%;
+          width:66.6666%;
+          top:0;bottom:0;
+        }
+
+        h1 {
+          font-size:22px;
+          margin:0;
+          font-weight:400;
+          line-height: 20px;
+          padding: 20px 2px;
+        }
+
+        a {
+          color:#404040;
+          text-decoration:none;
+        }
+
+        a:hover {
+          color:#101010;
+        }
+
+        .heading {
+          background:#fff;
+          border-bottom:1px solid #eee;
+          min-height:60px;
+          line-height:60px;
+          padding:0 10px;
+          background-color: #00853e;
+          color: #fff;
+        }
+
+        .listings {
+          height:100%;
+          overflow:auto;
+          padding-bottom:60px;
+        }
+
+        .listings .item {
+          display:block;
+          border-bottom:1px solid #eee;
+          padding:10px;
+          text-decoration:none;
+        }
+
+        .listings .item:last-child { border-bottom:none; }
+        .listings .item .title {
+          display:block;
+          color:#00853e;
+          font-weight:700;
+        }
+
+        .listings .item .title small { font-weight:400; }
+        .listings .item.active .title,
+        .listings .item .title:hover { color:#8cc63f; }
+        .listings .item.active {
+          background-color:#f8f8f8;
+        }
+        ::-webkit-scrollbar {
+          width:3px;
+          height:3px;
+          border-left:0;
+          background:rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-track {
+          background:none;
+        }
+        ::-webkit-scrollbar-thumb {
+          background:#00853e;
+          border-radius:0;
+        }
+
+        .marker {
+          border: none;
+          cursor: pointer;
+          height: 56px;
+          width: 56px;
+          background-image: url(marker.png);
+          background-color: rgba(0, 0, 0, 0);
+        }
+
+        .clearfix { display:block; }
+        .clearfix:after {
+          content:'.';
+          display:block;
+          height:0;
+          clear:both;
+          visibility:hidden;
+        }
+
+        /* Marker tweaks */
+        .mapboxgl-popup {
+          padding-bottom: 50px;
+        }
+
+        .mapboxgl-popup-close-button {
+          display:none;
+        }
+        .mapboxgl-popup-content {
+          font:400 15px/22px 'Source Sans Pro', 'Helvetica Neue', Sans-serif;
+          padding:0;
+          width:180px;
+        }
+        .mapboxgl-popup-content-wrapper {
+          padding:1%;
+        }
+        .mapboxgl-popup-content h3 {
+          background:#91c949;
+          color:#fff;
+          margin:0;
+          display:block;
+          padding:10px;
+          border-radius:3px 3px 0 0;
+          font-weight:700;
+          margin-top:-15px;
+        }
+
+        .mapboxgl-popup-content h4 {
+          margin:0;
+          display:block;
+          padding: 10px 10px 10px 10px;
+          font-weight:400;
+        }
+
+        .mapboxgl-popup-content div {
+          padding:10px;
+        }
+
+        .mapboxgl-container .leaflet-marker-icon {
+          cursor:pointer;
+        }
+
+        .mapboxgl-popup-anchor-top > .mapboxgl-popup-content {
+          margin-top: 15px;
+        }
+
+        .mapboxgl-popup-anchor-top > .mapboxgl-popup-tip {
+          border-bottom-color: #91c949;
+        }
+      </style>
+
+
+<script>
+
+// This will let you use the .remove() function later on
+if (!('remove' in Element.prototype)) {
+  Element.prototype.remove = function() {
+    if (this.parentNode) {
+      this.parentNode.removeChild(this);
+    }
+  };
+}
+
+mapboxgl.accessToken = 'pk.eyJ1IjoibWlnaHR5ZmluZWJyaW5lIiwiYSI6ImNqcnRudGtxeTAzaTY0M280aDR1a2N1dnMifQ.mIytKHpf2FOceB3GOA-brg';
+// This adds the map to your page
+var map = new mapboxgl.Map({
+  // container id specified in the HTML
+  container: 'map',
+  // style URL
+  style: 'mapbox://styles/mightyfinebrine/cjrto8ksc1ap82so4sdo7hn5l',
+  // initial position in [lon, lat] format
+  center: [-77.034084, 38.909671],
+  // initial zoom
+  zoom: 3
+});
+
+var stores = {
+
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GOODNESS ME <br> 74 Hamilton St North",
+        "City": "WATERDOWN, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.89798,
+          43.33306
+        ],
+        "type": "Point"
+      },
+      "id": "0011a3f34138ec4a5226928a51f12fd5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BRANDT MEAT PACKERS LTD.",
+        "Address": "BRANDT MEAT PACKERS LTD <BR> (blank)",
+        "City": "ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -77.12498,
+          45.81739
+        ],
+        "type": "Point"
+      },
+      "id": "009301bccd50581ab6d159cc86741b93"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SIMLIF - SIMPLY FIT HEALTH&FITNESS",
+        "Address": "SIMPLY FOR LIFE",
+        "City": "SAINT JOHN, NB",
+        "Province": "NB"
+      },
+      "geometry": {
+        "coordinates": [
+          -66.06407,
+          45.27344
+        ],
+        "type": "Point"
+      },
+      "id": "0095c96d959f69537d4f4df54101bd7e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "DANFAR - DAN'S FARM & COUNTRY MKT.",
+        "Address": "DANFAR - DAN'S FARM & COUNTRY MKT.<BR>2030 BEAR HILL ROAD",
+        "City": "SAANICHTON, BC",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.4123,
+          48.5479
+        ],
+        "type": "Point"
+      },
+      "id": "034a86967cd553b33c458904f4501cb8"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOOMIS - WHOLE FOODS MARKET",
+        "Address": "WHOFOOMIS - WHOLE FOODS MARKET <BR> 155 SQUARE ONE DR",
+        "City": "MISSISSAUGA, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.643496,
+          43.595379
+        ],
+        "type": "Point"
+      },
+      "id": "038704e23daaa1ed56f162456b4c5df9"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOONBY - WHOLE FOODS MARKET BURNAB",
+        "Address": "WHOFOONBY - WHOLE FOODS MARKET BURNAB <BR>4420 LOUGHEED HWY",
+        "City": "BURNABY, BC",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.005219,
+          49.26629
+        ],
+        "type": "Point"
+      },
+      "id": "038e99a43a5a9449cbac1566d0a6e882"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "ROOCEL - THE ROOT CELLAR",
+        "Address": "ROOCEL - THE ROOT CELLAR <BR> 34 QUEEN STREET",
+        "City": "CHARLOTTETOWN, PEI",
+        "Province": "PE"
+      },
+      "geometry": {
+        "coordinates": [
+          -63.12495,
+          46.23224
+        ],
+        "type": "Point"
+      },
+      "id": "03b8810c9bd30a4c930897c5a770f531"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "AVEMAR - AVE MARIA HEALTH",
+        "Address": "AVE MARIA HEALTH <BR> 1638 20TH AVE",
+        "City": "PRINCE GEORGE, BC",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -122.75873,
+          53.90559
+        ],
+        "type": "Point"
+      },
+      "id": "052f58b813f269163f17e5ef06270d14"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLASHEP - PLANET ORGANIC SHEPARD",
+        "Address": "PLANET ORGANIC SHEPARD <BR> 100-4916 - 130TH AVE SE",
+        "City": "CALGARY, AB",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -113.961228,
+          50.931992
+        ],
+        "type": "Point"
+      },
+      "id": "05cb245bdd407623a9ba6753654a4f74"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SWEET POTATO, THE",
+        "Address": "THE SWEET POTATO <BR>108 VINE AVENUE",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.46841,
+          43.66693
+        ],
+        "type": "Point"
+      },
+      "id": "0603692d291c01da8d7d3d1606b89fd0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "HEALTHY BUTCHER, THE - EGLINTON",
+        "Address": "THE HEALTHY BUTCHER <BR> 298 EGLINTON AVE.  WEST",
+        "City": "TORONTO,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.40807,
+          43.70493
+        ],
+        "type": "Point"
+      },
+      "id": "060a37670c8f16916e2eb3f13142d252"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLACAL - PLANET ORGANIC #2  CAL",
+        "Address": "PLANET ORGANIC <BR> 100-10233 ELBOW DRIVE SW",
+        "City": "CALGARY, AB",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -114.08513,
+          50.96198
+        ],
+        "type": "Point"
+      },
+      "id": "0657d06a07a9bba896eeede8631570f3"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOOOTT - WHOLE FOODS MARKET",
+        "Address": "WHOLE FOODS MARKET <BR> 951 BANK STREET",
+        "City": "OTTAWA, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -75.686008,
+          45.399308
+        ],
+        "type": "Point"
+      },
+      "id": "07798bb67acdba356c980b9432d3d0b5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "ONE FINE FOOD",
+        "Address": "ONE FINE FOOD <BR> 44 APEX DR.",
+        "City": "TORONTO, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.4586,
+          43.71621
+        ],
+        "type": "Point"
+      },
+      "id": "08573846cb58335baa38b8fd0511b8fe"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "HIGHLAND FARMS - SCARBOROUGH",
+        "Address": "HIGHLAND FARMS <BR> 850 ELLESMERE RD.",
+        "City": "SCARBOROUGH, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.28363,
+          43.76599
+        ],
+        "type": "Point"
+      },
+      "id": "09d8b945556e79cbda04419b910ea030"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "KARMA CO-OPERATIVE INC.",
+        "Address": "KARMA CO-OPERATIVE INC <BR> 739 PALMERSTON AVE.",
+        "City": "TORONTO, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.41441,
+          43.66812
+        ],
+        "type": "Point"
+      },
+      "id": "0b1720f000f8807f2dabae3e38449db0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "AURA WHOLE FOODS LTD. (PICKUP)",
+        "Address": "AURA WHOLE FOODS LTD. <BR> 199 WESTMORLAND ST.",
+        "City": "FREDERICTON, NB",
+        "Province": "NB"
+      },
+      "geometry": {
+        "coordinates": [
+          -66.647819,
+          45.96139
+        ],
+        "type": "Point"
+      },
+      "id": "0c6918e9c6bec36eb4d68577ef7a754a"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "COSFOO - COSTAS FOODMARKET LTD",
+        "Address": "COSTAS FOODMARKET LTD <BR> 11-C SIMCOE PLAZA",
+        "City": "TERRACE BAY, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -87.101086,
+          48.78304
+        ],
+        "type": "Point"
+      },
+      "id": "0cff55e68d907678fde5a50c49baba7a"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOLE FOODS MARKET - OTTAWA - 10310 (6-105-951)",
+        "Address": "WHOLE FOODS MARKET <BR> 951 BANK STREET",
+        "City": "OTTAWA, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -75.686008,
+          45.399308
+        ],
+        "type": "Point"
+      },
+      "id": "0d56c3090745f1a6730e6a20a8ae3a1b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLASHEP - PLANET ORGANIC(SHEPARD )",
+        "Address": "PLANET ORGANIC <BR> 100-4916 - 130TH AVE SE",
+        "City": "CALGARY, AB",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -113.961228,
+          50.931992
+        ],
+        "type": "Point"
+      },
+      "id": "0e2ca4b88b321214965e70ba3ab0213c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SOBEYS #6726 - STITTSVILLE",
+        "Address": "SOBEYS <BR> 6315 HAZELDEAN RD.",
+        "City": "STITTSVILLE, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -75.94147,
+          45.26681
+        ],
+        "type": "Point"
+      },
+      "id": "0e7072c7833eae518b2977230ae0adf2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLAEDM - PLANET ORGANIC #1  EDM S",
+        "Address": "PLANET ORGANIC <BR> 7917 104TH ST",
+        "City": "EDMONTON, AB",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -113.49644,
+          53.5155
+        ],
+        "type": "Point"
+      },
+      "id": "0f2f1341e0ab1000148034e6c6dc87fd"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "COUHER - COUNTRY HERBS",
+        "Address": "COUNTRY HERBS <BR> 3453 HASTINGS STREET",
+        "City": "HAZELTON, BC",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -127.62958,
+          55.2659
+        ],
+        "type": "Point"
+      },
+      "id": "0f9e4798b4ffa25109625a1d0d588ef0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLANHEAD - PLANET ORGANIC #8 (MISS)",
+        "Address": "PLANET ORGANIC <BR> 170 LAKESHORE ROAD EAST",
+        "City": "MISSISSAUGA, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.58044,
+          43.5571
+        ],
+        "type": "Point"
+      },
+      "id": "10c7594fc13d5804601cde78fe231cc9"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BAR CAFE, THE",
+        "Address": "THE BAR CAFE <BR> 2 BROCK ST. WEST",
+        "City": "UXBRIDGE, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.120668,
+          44.109174
+        ],
+        "type": "Point"
+      },
+      "id": "10e4a077c0b2bfa376ddf8d0b39956d5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "THE HEALTHY BUTCHER - EGLINTON",
+        "Address": "THE HEALTHY BUTCHER",
+        "City": "ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -77.12498,
+          45.81739
+        ],
+        "type": "Point"
+      },
+      "id": "11a752729c98c0e6ae2dcb399ab11a84"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "DELECTABLE FINE FOODS",
+        "Address": "DELECTABLE FINE FOODS <BR>13 - 550 LANSDOWNE ST.  WEST",
+        "City": "PETERBOROUGH, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -78.32628,
+          44.28719
+        ],
+        "type": "Point"
+      },
+      "id": "1689cfeb314a4dbdac46d6d9bde040ce"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "ISLNAT - ISLAND NATURAL(1999)INC.",
+        "Address": "ISLAND NATURAL <BR> 6560 METRAL DR.",
+        "City": "NANAIMO,BC",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -124.04803,
+          49.23335
+        ],
+        "type": "Point"
+      },
+      "id": "17e34f464beaf2355113fd4c9c3e590e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BLMEIN - BUY LOW - MEINHARDT S",
+        "Address": "BUY LOW - MEINHARDT S <BR> 3002 - GRANVILLE STREET",
+        "City": "VANCOUVER, BC",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.13833,
+          49.25877
+        ],
+        "type": "Point"
+      },
+      "id": "1d2c0a7293ab0c49d9d579ea608815f7"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "DONPOCO - DONALD'S MARKET-POCO",
+        "Address": "DONALD'S MARKET <BR> 120-2627 SHAUGHNESSY ST.",
+        "City": "PORT COQUITLAM, BC",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -122.780869,
+          49.263328
+        ],
+        "type": "Point"
+      },
+      "id": "1e63b9f2fe2aea3f9c1336d8f92fd978"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SWEET GREENS",
+        "Address": "SWEET GREENS <BR>39 MAIN ST.  NORTH",
+        "City": "HAGERSVILLE, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.050295,
+          42.963372
+        ],
+        "type": "Point"
+      },
+      "id": "207e6e794c66d90a7049d6f40a837e5c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "NATURE'S EMPORIUM (BURLINGTON) LTD.",
+        "Address": "NATURE'S EMPORIUM <BR> 2180 ITABASHI WAY",
+        "City": "BURLINGTON, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.79482,
+          43.38705
+        ],
+        "type": "Point"
+      },
+      "id": "232f2cfda70793602929edf7b733b08a"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "COUGROSAL - COUNTRY GROCER SALTSPRING",
+        "Address": "COUNTRY GROCER <BR>374 LOWER GANGES RD",
+        "City": "SALTSPRING ISLA, BC",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.510711,
+          48.860592
+        ],
+        "type": "Point"
+      },
+      "id": "244ce2dc5fbf23a96d7db43e5a030138"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "THE DUTCH MARKET (1-105-80)",
+        "Address": "THE DUTCH MARKET <BR> 80 WILLIAM ST.  SOUTH",
+        "City": "CHATHAM, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -82.18084,
+          42.40298
+        ],
+        "type": "Point"
+      },
+      "id": "2480bf22248b6e8a9956500c2a93de10"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "VITA013 - VITA HEALTH #13 KILDONAN",
+        "Address": "VITA HEALTH <BR> 710 - 1615  REGENT AVENUE",
+        "City": "WINNIPEG, MB",
+        "Province": "MB"
+      },
+      "geometry": {
+        "coordinates": [
+          -97.06968,
+          49.89922
+        ],
+        "type": "Point"
+      },
+      "id": "24d8475e6fdd1e9f55e7c6291a343fe7"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "EATPURE - EAT PURE MOUNTAIN MARKET",
+        "Address": "EAT PURE MOUNTAIN MARKET <BR> BOX 474",
+        "City": "GOLDEN, BC",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          147.40357,
+          -38.20919
+        ],
+        "type": "Point"
+      },
+      "id": "2812af8feaddb9c3ed7e5ff2f7eec432"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FLON6782 - FOODLAND # 6782",
+        "Address": "FOODLAND <BR> 50 MAIN STREET EAST",
+        "City": "BEETON, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.781142,
+          44.079834
+        ],
+        "type": "Point"
+      },
+      "id": "294408f47b24a16e62d303df706a5ac2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "KELNUT - KELLY'S NUTRITION CENTER",
+        "Address": "KELLY'S NUTRITION CENTER <BR> 820 RED RIVER ROAD",
+        "City": "THUNDER BAY, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -89.24687,
+          48.44521
+        ],
+        "type": "Point"
+      },
+      "id": "29de9279bfeb818c768aae74ca7224b0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "NOAH'S NATURAL FOODS (CARLTON)",
+        "Address": "NOAH'S NATURAL FOODS <BR> 21A CARLTON ST.",
+        "City": "TORONTO, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.38193,
+          43.6611
+        ],
+        "type": "Point"
+      },
+      "id": "2bd3d7a5597f3ed25e86f10afbb8dbe9"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "MARCELLO'S CITY MARKET (LOBLAWS 2643)",
+        "Address": "MARCELLO'S CITY MARKET <BR> 1022 KING ST. WEST",
+        "City": "TORONTO, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.41561,
+          43.64153
+        ],
+        "type": "Point"
+      },
+      "id": "2e704ea4e4cd9f965fb4debc47ab41ef"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "AURWHO - AURA WHOLE FOODS",
+        "Address": "AURA WHOLE FOODS <BR> 199 WESTMORLAND ST",
+        "City": "FREDERICTON, NB",
+        "Province": "NB"
+      },
+      "geometry": {
+        "coordinates": [
+          -66.647819,
+          45.96139
+        ],
+        "type": "Point"
+      },
+      "id": "316e2ada8fada664af0e25634f40b538"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "NATURE'S EMPORIUM (MAPLE) LTD.",
+        "Address": "NATURE'S EMPORIUM <BR> 2535 MAJOR MACKENZIE DR. WEST, UNIT 2",
+        "City": "VAUGHAN, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.52123,
+          43.85227
+        ],
+        "type": "Point"
+      },
+      "id": "3263b4d98cb20c5a985293d09b4899fb"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "CAPROB - WHOLE FOODS - ROBSON",
+        "Address": "WHOLE FOODS <BR> 1675 ROBSON ST",
+        "City": "VANCOUVER, BC",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.133344,
+          49.290298
+        ],
+        "type": "Point"
+      },
+      "id": "34485c652dc23b33139f9f61cddfb682"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GOODNESS ME - GAGE",
+        "Address": "GOODNESS ME <BR>1000 UPPER GAGE AVE",
+        "City": "HAMILTON, ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.84549,
+          43.21375
+        ],
+        "type": "Point"
+      },
+      "id": "363222a2b932dcbdbc88576f056c40bd"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "VITAOSB - OSBORNE VILLAGE",
+        "Address": "VITAOSB<BR>1-166 OSBORNE ST",
+        "City": "WINNIPEG,MB",
+        "Province": "MB"
+      },
+      "geometry": {
+        "coordinates": [
+          -97.14334,
+          49.8768
+        ],
+        "type": "Point"
+      },
+      "id": "367198789ec010ef427f758c36ff548b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "NUT038 - NUTTER S # 38-OKOTOKS",
+        "Address": "GROCERY",
+        "City": "OKOTOKS, AB",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -113.97494,
+          50.72591
+        ],
+        "type": "Point"
+      },
+      "id": "36da923bcfa5fe2f6fd4d9f59c1a33f3"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FOODLAND #6329 - MOUNT ALBERT",
+        "Address": "FOODLAND <BR>19263 ON-48 (MARKHAM RD.)",
+        "City": "MOUNT ALBERT,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.30935,
+          44.1358
+        ],
+        "type": "Point"
+      },
+      "id": "376a30c7344dc99caecedb45993edbae"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOLE FOODS MARKET - UNIONVILLE - 10456",
+        "Address": "WHOLE FOODS MARKET<BR>3997 HIGHWAY #7",
+        "City": "MARKHAM,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.323828,
+          43.857949
+        ],
+        "type": "Point"
+      },
+      "id": "37c68a92953b774a1390f18f1a29387c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLAEDM - PLANET ORGANIC #1 (EDM S)",
+        "Address": "PLANET ORGANIC<BR>7917 104TH ST",
+        "City": "EDMONTON,AB",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -113.49644,
+          53.5155
+        ],
+        "type": "Point"
+      },
+      "id": "3927498eab84fe1872c4dc205c3fe6e5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FIESFARM - FIESTA FARMS",
+        "Address": "FIESTA FARMS<BR>200 CHRISTIE ST",
+        "City": "TORONTO,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.42064,
+          43.66879
+        ],
+        "type": "Point"
+      },
+      "id": "39d66d2cc9f87291930dfdc5eeec8bbd"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "COMFREFOO - COMMISSO S FRESH FOODS",
+        "Address": "COMMISSO S FRESH FOODS<BR>6161 THORLD STONE RD",
+        "City": "NIAGARA FALLS,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.09746,
+          43.11599
+        ],
+        "type": "Point"
+      },
+      "id": "39de054882e9958144930d41643e0a1a"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "ISLNAT - ISLAND NATURAL 1999 INC",
+        "Address": "ISLAND NATURAL<BR>6560 METRAL DR",
+        "City": "NANAIMO,BC",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -124.04803,
+          49.23335
+        ],
+        "type": "Point"
+      },
+      "id": "3f8f02bb6d96464257ed8a9d4b4140b5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLAROY - PLANET ORGANIC CALGARY",
+        "Address": "PLANET ORGANIC<BR>8650 112TH AVE NW",
+        "City": "CALGARY,AB",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -114.21073,
+          51.15146
+        ],
+        "type": "Point"
+      },
+      "id": "40cf1104a312524387dbd30c745ce07c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "ORGEAR - ORGANIC EARTH MARKET INC.",
+        "Address": "ORGANIC EARTH MARKET<BR>6487 QUINPOOL ROAD",
+        "City": "HALIFAX,NS",
+        "Province": "NS"
+      },
+      "geometry": {
+        "coordinates": [
+          -63.60271,
+          44.64409
+        ],
+        "type": "Point"
+      },
+      "id": "41e61f7c96e31ea588cc5d72b58500c7"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOLE FOODS MARKET (HEAD OFFICE)",
+        "Address": "WHOLE FOODS MARKET<BR>904 THE EAST MALL",
+        "City": "ETOBICOKE,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.57209,
+          43.67001
+        ],
+        "type": "Point"
+      },
+      "id": "4267907f51450c4c8eb1be2f74e5a461"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "HEATHERLEA FARM SHOPPE",
+        "Address": "HEATHERLEA FARM SHOPPE<BR>17049 WINSTON CHURCHILL BLVD.",
+        "City": "CALEDON,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.02742,
+          43.78064
+        ],
+        "type": "Point"
+      },
+      "id": "4332b9d3d8a8134367d4add5a2abfa29"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FINEST SAUSAGE & MEAT",
+        "Address": "FINEST SAUSAGE & MEAT<BR>1575 VICTORIA ST.  NORTH",
+        "City": "KITCHENER,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.43622,
+          43.4729
+        ],
+        "type": "Point"
+      },
+      "id": "43aec072df623e2bcf29c94bc7842fb1"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SCHEFFLER'S DELICATESSEN & CHEESE",
+        "Address": "SCHEFFLER'S DELICATESSEN & CHEESE<BR>92 FRONT STREET EAST",
+        "City": "TORONTO,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.37195,
+          43.64943
+        ],
+        "type": "Point"
+      },
+      "id": "44d52c4373d7583ece5f59bb0714be00"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "TIANO'S QUALITY PRODUCE",
+        "Address": "TIANO'S QUALITY PRODUCE<BR>375 KINGSTON RD.",
+        "City": "PICKERING,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.12825,
+          43.80921
+        ],
+        "type": "Point"
+      },
+      "id": "453fdbf18ac0623957bdac34b53a1297"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BE GREATER ORGANICS INC. (5-105-1515)",
+        "Address": "BE GREATER ORGANICS INC<BR>1515 LASALLE BLVD.",
+        "City": "SUDBURY,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.940383,
+          46.521905
+        ],
+        "type": "Point"
+      },
+      "id": "4754dc6e5059a0e03ab8080f4ab28397"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SANGSTER'S HEALTH CENTRES",
+        "Address": "SANGSTER'S HEALTH CENTRES<BR>3916 VICTORIA AVE.  UNIT 2",
+        "City": "VINELAND,ON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.39333,
+          43.15208
+        ],
+        "type": "Point"
+      },
+      "id": "4850d197118ab21300be37bcca239863"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "CHEFLO - CHEZ FLORA",
+        "Address": "CHEZ FLORA<BR>23 REMI-PAUL",
+        "City": "LOUISEVILLE,QC",
+        "Province": "QC"
+      },
+      "geometry": {
+        "coordinates": [
+          -72.942283,
+          46.256164
+        ],
+        "type": "Point"
+      },
+      "id": "48d21c7b530dc677d44b3c9357f6cee5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SIMSJNL - SIMPLY FOR LIFE  ST JOHNS",
+        "Address": "SIMPLY FOR LIFE <,BR>140 STAVANGER DRIVE",
+        "City": "ST JOHNS,NL",
+        "Province": "NL"
+      },
+      "geometry": {
+        "coordinates": [
+          -52.71262,
+          47.61926
+        ],
+        "type": "Point"
+      },
+      "id": "4a8629254fdbb05ecedf569ceb021d7b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "VALU MART #2663 (COLLEGE CITY MARKET)",
+        "Address": "301 COLLEGE ST.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.401525,
+          43.657608
+        ],
+        "type": "Point"
+      },
+      "id": "4cf50b1186278930b8eef3de41696ac0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOOWVN - WHOLE FOODS MARKET - WEST",
+        "Address": "925 MAIN ST",
+        "City": "WEST VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.142879,
+          49.325584
+        ],
+        "type": "Point"
+      },
+      "id": "4d13a2c5f2b48a28afadf8cf25b6472d"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "ESSLIFE - ESSENCE OF LIFE NATURAL F",
+        "Address": "50 KENSINGTON AVE",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.40071,
+          43.65397
+        ],
+        "type": "Point"
+      },
+      "id": "4dda9b978cfc391412202a24f70c3970"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "JACOBSONS GOURMET CONCEPTS",
+        "Address": "141 BEECHWOOD AVE.",
+        "City": "OTTAWA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -75.67157,
+          45.44245
+        ],
+        "type": "Point"
+      },
+      "id": "4ff3277cd60840477836526c8877f25b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "RAINBOW NATURAL FOODS",
+        "Address": "1487 RICHMOND RD.",
+        "City": "OTTAWA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -75.790617,
+          45.362751
+        ],
+        "type": "Point"
+      },
+      "id": "50c0977a65502c0d01cd5d2e6a989149"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "MARCHELEO'S MARKETPLACE (WYNFORD)",
+        "Address": "150 WYNFORD DR.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.3266,
+          43.72721
+        ],
+        "type": "Point"
+      },
+      "id": "51cf61e0a06e60d803448d2096051123"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FIDDLEHEADS HEALTH & NUTRITION (BRIDGEPORT)",
+        "Address": "75 BRIDGEPORT RD.  EAST",
+        "City": "WATERLOO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.51558,
+          43.46853
+        ],
+        "type": "Point"
+      },
+      "id": "538eb1d74a6441c54d67fa0ebc86ab45"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOOCOR - WHOLE FOODS MRKT",
+        "Address": "301 CORNWALL RD",
+        "City": "OAKVILLE",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.67861,
+          43.45648
+        ],
+        "type": "Point"
+      },
+      "id": "543651d4ffa2cb8f645b2d2e72c71541"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FIDDLEHEADS HEALTH & NUTRITION (HESPELER)",
+        "Address": "(blank)",
+        "City": "(blank)",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -77.12498,
+          45.81739
+        ],
+        "type": "Point"
+      },
+      "id": "5964a9df526deddf605961901f597f21"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "COM10THG - COMMUNITY NATURAL FOODS",
+        "Address": "*** GROCERY DEPARTMENT **",
+        "City": "CALGARY",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -114.06301,
+          51.04533
+        ],
+        "type": "Point"
+      },
+      "id": "59c0a2820832b6b6ae6331edea1aada0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOOVIC - WHOLE FOODS VICTORIA",
+        "Address": "3587 BLANSHARD ST",
+        "City": "VICTORIA",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.376,
+          48.456989
+        ],
+        "type": "Point"
+      },
+      "id": "59fbec29b62bf3fc285b0ec395ce96aa"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "NUTRITION PLUS",
+        "Address": "42 MAPLE AVE.",
+        "City": "BARRIE",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.69163,
+          44.38896
+        ],
+        "type": "Point"
+      },
+      "id": "5a3cc1d8eae4c28ef11444fecc145df8"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "METRO #100498 GLEBE (MCKEEN HOLDINGS LTD.)",
+        "Address": "754 BANK ST.",
+        "City": "OTTAWA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -75.68891,
+          45.40334
+        ],
+        "type": "Point"
+      },
+      "id": "5abd3d9dd22610c3e92bdc6e667870af"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SUMMERHILL MARKET - MT. PLEASANT",
+        "Address": "446 SUMMERHILL AVE.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.37548,
+          43.68639
+        ],
+        "type": "Point"
+      },
+      "id": "5d133fba46597ecaa269315e2d3c5bdb"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BAMBOO NATURAL FOODS",
+        "Address": "211 MARTINDALE RD.  UNIT#1B",
+        "City": "ST. CATHERINES",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.2737,
+          43.1714
+        ],
+        "type": "Point"
+      },
+      "id": "5e710e1afc1b670ed04e0986d0b7808c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SOLEPISAN - SOL EPICERIE SANTE",
+        "Address": "186 AVE LA COLLINE",
+        "City": "GATINEAU",
+        "Province": "QC"
+      },
+      "geometry": {
+        "coordinates": [
+          -75.8324,
+          45.39635
+        ],
+        "type": "Point"
+      },
+      "id": "5ef667462d0804ef801dcefbe721dc0c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SWECHE - SWEET CHERUBIM",
+        "Address": "1105 COMMERCIAL DR.",
+        "City": "VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.069737,
+          49.274685
+        ],
+        "type": "Point"
+      },
+      "id": "5f9aa8c2f98c3b4c11fcb6c829556efd"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BOB COFFEE BAR 909 INC.",
+        "Address": "440 CHRISTIE ST.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.42321,
+          43.67542
+        ],
+        "type": "Point"
+      },
+      "id": "61a5e33f279aa38b563383e86e7deef0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "HEAESSEN - HEALTH ESSENTIALS",
+        "Address": "SUPPLEMENTS",
+        "City": "VICTORIA",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.36445,
+          48.42855
+        ],
+        "type": "Point"
+      },
+      "id": "632c02fa0c0e68337bac415a5c595d31"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOLE FOODS MARKET - SQUARE ONE -10268",
+        "Address": "155 SQUARE ONE DRIVE",
+        "City": "MISSISSAUGA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.643496,
+          43.595379
+        ],
+        "type": "Point"
+      },
+      "id": "64d9c9f609e720a2827e6fec7efcb178"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FIDDLEHEADS HEALTH & NUTRITION (BRUCE)",
+        "Address": "(blank)",
+        "City": "(blank)",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -77.12498,
+          45.81739
+        ],
+        "type": "Point"
+      },
+      "id": "65a6a1b1df65bf96e2a3645f4d0d0046"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "DOGTALES - DOG TALES RESCUE",
+        "Address": "AND SANCTUARY",
+        "City": "KING CITY",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.52798,
+          43.92783
+        ],
+        "type": "Point"
+      },
+      "id": "6716db745401cff85ea1e34218449b3c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOOCAM - WHOLE FOODS MARKET CAMBIE",
+        "Address": "510 WEST 8TH",
+        "City": "VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.11505,
+          49.26405
+        ],
+        "type": "Point"
+      },
+      "id": "6905cae6b6f578bc4ccc8f3baef04b69"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "AMBROSIA NATURAL FOODS - VAUGHAN",
+        "Address": "",
+        "City": "",
+        "Province": ""
+      },
+      "geometry": {
+        "coordinates": [
+          0,
+          0
+        ],
+        "type": "Point"
+      },
+      "id": "6aebc4af1944afd099f0ea1ac757d43c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FRESH & WILD FOOD MARKETS",
+        "Address": "69 SPADINA AVENUE",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.39473,
+          43.64569
+        ],
+        "type": "Point"
+      },
+      "id": "6af0deb4bac5599ceb04685bdecf894f"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "HIGHLAND FARMS - MAPLE",
+        "Address": "50 MATHESON BLVD. EAST",
+        "City": "MISSISSAUGA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.669015,
+          43.620469
+        ],
+        "type": "Point"
+      },
+      "id": "6ba93b7e822904494f116f372afec5ba"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SWEPOTINC - THE SWEET POTATO INC.",
+        "Address": "108 VINE AVE UNIT B",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.46841,
+          43.66693
+        ],
+        "type": "Point"
+      },
+      "id": "6d14983e4d6b810b02db29f63a6a45a1"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FRULIN - FRUITERIE LINA",
+        "Address": "8300 HENRI-JULIEN",
+        "City": "MONTREAL",
+        "Province": "QC"
+      },
+      "geometry": {
+        "coordinates": [
+          -73.63338,
+          45.54207
+        ],
+        "type": "Point"
+      },
+      "id": "6f28e25f29a02102b285c83460d2cb6a"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "RESCUE DOGS VEGAN & COVEN PLANT BASED MARKETPLACE",
+        "Address": "681 BARTON ST.  EAST",
+        "City": "HAMILTON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.83575,
+          43.25653
+        ],
+        "type": "Point"
+      },
+      "id": "6fcbf520de17e3298a9620dc31fb20ad"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "KIM NATURAL FOODS",
+        "Address": "219 RONCESVALLES AVE.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.44857,
+          43.6458
+        ],
+        "type": "Point"
+      },
+      "id": "6fff87742c8422942cadb6aeec5e9fed"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PICONE FINE FOOD",
+        "Address": "34 KING ST.  WEST",
+        "City": "DUNDAS",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.955363,
+          43.266147
+        ],
+        "type": "Point"
+      },
+      "id": "70a5ff12e0f925128d5b73086c3ea591"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOOLEA - WHOLE FOODS MARKET",
+        "Address": "1860 BAYVIEW AVENUE",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.37811,
+          43.71429
+        ],
+        "type": "Point"
+      },
+      "id": "70b740fe16068190dad5b2f8e9976eb8"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "DONHAS - DONALD'S MARKET-HASTINGS",
+        "Address": "2342 E HASTINGS ST",
+        "City": "VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.05716,
+          49.28087
+        ],
+        "type": "Point"
+      },
+      "id": "7218fe8087eb8684c481c05ff8e359d4"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "ORGANIC GARAGE, THE - VAUGHAN (Bathurst)",
+        "Address": "8020 BATHURST ST.",
+        "City": "VAUGHAN",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.451712,
+          43.817014
+        ],
+        "type": "Point"
+      },
+      "id": "72483948e350440b092419d117169b9f"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BLMAIN - NESTERS MARKET- MAIN ST",
+        "Address": "4475 MAIN STREET",
+        "City": "VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.101511,
+          49.244944
+        ],
+        "type": "Point"
+      },
+      "id": "7476b1ee3287309ae40dc5636f8cf81b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BE GREATER ORGANICS INC. (5-105-1556)",
+        "Address": "1556 LASALLE BLVD.",
+        "City": "SUDBURY",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.93981,
+          46.52241
+        ],
+        "type": "Point"
+      },
+      "id": "7633c5a52d5a28367a1a438e372b1cba"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLACAL - PLANET ORGANIC #2 (CAL)",
+        "Address": "100-10233 ELBOW DRIVE SW",
+        "City": "CALGARY",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -114.08513,
+          50.96198
+        ],
+        "type": "Point"
+      },
+      "id": "77e35855ad836f75a348970b218b2521"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "RIVGRO - RIVERSIDE GROCERY",
+        "Address": "201 LOWE ST",
+        "City": "WHITEHORSE",
+        "Province": "YT"
+      },
+      "geometry": {
+        "coordinates": [
+          -135.049088,
+          60.71493
+        ],
+        "type": "Point"
+      },
+      "id": "78e57b9bbf76524272e4f875a32ae0d9"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "DONHAS - DONALD S MARKET-HASTINGS",
+        "Address": "2342 E HASTINGS ST",
+        "City": "VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.05716,
+          49.28087
+        ],
+        "type": "Point"
+      },
+      "id": "7940127ff69451bf2746d234df5f5e5e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "DYNHEA - DYNAMIC HEALTH SERVICE",
+        "Address": "#12 4736 LAKEISE AVE",
+        "City": "TERRACE",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -128.595572,
+          54.517218
+        ],
+        "type": "Point"
+      },
+      "id": "7afdf548038bd6a506f2e0da9b1031e1"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FIESTA FARMS",
+        "Address": "200 CHRISTIE ST.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.42064,
+          43.66879
+        ],
+        "type": "Point"
+      },
+      "id": "7bbbada5aa677ba93450488b1a670430"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "COMCHIN - COMMUNITY NATURAL CHINOOK",
+        "Address": "202 61ST AVE SW",
+        "City": "CALGARY",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -114.065995,
+          50.997864
+        ],
+        "type": "Point"
+      },
+      "id": "7c86bd38470e90529f781013d048099e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOONVN - WHOLE FOODS MARKET NORTH",
+        "Address": "120 13TH STREET EAST",
+        "City": "NORTH VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.071718,
+          49.320114
+        ],
+        "type": "Point"
+      },
+      "id": "7e67e01ef720c5fa4fef615b75400568"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FIDDLEHEADS HEALTH & NUTRITION (BOARDWALK)",
+        "Address": "(blank)",
+        "City": "(blank)",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -77.12498,
+          45.81739
+        ],
+        "type": "Point"
+      },
+      "id": "7f0780c76b1f93e8c72ed46ba6dfc366"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "POMAPI - LA POMME D API FRUITERIE",
+        "Address": "2599 BOUL ROSEMONT",
+        "City": "MONTREAL",
+        "Province": "QC"
+      },
+      "geometry": {
+        "coordinates": [
+          -73.58545,
+          45.54786
+        ],
+        "type": "Point"
+      },
+      "id": "7f9462d8d91ff0be8f4fdf0f054c7fa0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GALATI'S MARKET FRESH - LESLIE (DAIRY)",
+        "Address": "5845 LESLIE STREET",
+        "City": "NORTH YORK",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.36962,
+          43.79836
+        ],
+        "type": "Point"
+      },
+      "id": "80699d8e8631ed0e80934181b074e068"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "TODAY'S NATURAL SOLUTIONS HEALTH FOOD (COBOURG)",
+        "Address": "955 Elgin Street West unit 1",
+        "City": "COBOURG",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -78.196363,
+          43.97187
+        ],
+        "type": "Point"
+      },
+      "id": "8491c2e275e4380ae4a2b6b2cfb4efdf"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "REFILLERY DISTRICT",
+        "Address": "(blank)",
+        "City": "(blank)",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -77.12498,
+          45.81739
+        ],
+        "type": "Point"
+      },
+      "id": "85df2e682b2a4bcfefb4c30059895ec8"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "THEPAN - THE PANTRY",
+        "Address": "1620 GERRARD ST E",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.31962,
+          43.67295
+        ],
+        "type": "Point"
+      },
+      "id": "884dcaf8e11c4d289008c46affe3e48a"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "JUNCOOP - JUNCTION CO-OP",
+        "Address": "2775 DUNDAS ST W",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.46173,
+          43.66507
+        ],
+        "type": "Point"
+      },
+      "id": "88a53d797521d5cb0bb0eeb3e7afcea9"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "LA SALUMERIA DELICATESSEN FOODS LTD.",
+        "Address": "2021 YONGE ST.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.39692,
+          43.70134
+        ],
+        "type": "Point"
+      },
+      "id": "88b28c37a58c238915d58d0784d0f401"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "DONQUA - DONALD'S MARKET NEW WEST",
+        "Address": "130 - 810 QUAYSIDE DRIVE",
+        "City": "NEW WESTMINSTER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -122.9117,
+          49.20015
+        ],
+        "type": "Point"
+      },
+      "id": "8dd627b349d063e5806cd62ca313217a"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "MARKET ORGANICS",
+        "Address": "126 YORK ST.",
+        "City": "OTTAWA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -75.68966,
+          45.42891
+        ],
+        "type": "Point"
+      },
+      "id": "90a868143a0d33ad0ce502705f8d52e7"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "NUT001 - NUTTER S#1 - MEDICINE HAT",
+        "Address": "NUTTER S BULK & NATURAL",
+        "City": "MEDICINE HAT",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -110.67813,
+          50.04108
+        ],
+        "type": "Point"
+      },
+      "id": "91426da5c9407426d051fddfc31f74d8"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "LAWSON'S (01-105-917)",
+        "Address": "917 2ND AVE.  EAST",
+        "City": "OWEN SOUND",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.9426,
+          44.56611
+        ],
+        "type": "Point"
+      },
+      "id": "91ac1968c433813b7fa8a894f12afa77"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "ORGANIC GARAGE, THE - OAKVILLE",
+        "Address": "579 KERR ST.",
+        "City": "OAKVILLE",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.68884,
+          43.44807
+        ],
+        "type": "Point"
+      },
+      "id": "925071b2216efad6df3bba366961ae65"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BLSURR - NESTERS MARKET #080031",
+        "Address": "102-10835 CITY PARKWAY",
+        "City": "SURREY",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -122.848954,
+          49.199671
+        ],
+        "type": "Point"
+      },
+      "id": "94e42ee70100b57ca5b2307859c51cb6"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "DONPOCO - DONALD S MARKET-POCO",
+        "Address": "120-2627 SHAUGHNESSY ST",
+        "City": "PORT COQUITLAM",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -122.780869,
+          49.263328
+        ],
+        "type": "Point"
+      },
+      "id": "9547d0eabd66b3cfc245526e4774b98a"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "NATUREMPMA - NATURE S EMPORIUM",
+        "Address": "2535 MAJOR MACKENZIE DR W",
+        "City": "MAPLE",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.52123,
+          43.85227
+        ],
+        "type": "Point"
+      },
+      "id": "95860938797e29ea9efbf0220961a34f"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "NATURE'S EMPORIUM - NEWMARKET",
+        "Address": "16655 YONGE ST., #27",
+        "City": "NEWMARKET",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.475234,
+          44.033669
+        ],
+        "type": "Point"
+      },
+      "id": "96d258dcef91d86546daa876288ff03e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BLMEIN - BUY LOW - MEINHARDT'S",
+        "Address": "3002 - GRANVILLE STREET",
+        "City": "VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.13833,
+          49.25877
+        ],
+        "type": "Point"
+      },
+      "id": "9c8752c836cec4441e91d696988f9112"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "DONQUA - DONALD S MARKET NEW WEST",
+        "Address": "130 - 810 QUAYSIDE DRIVE",
+        "City": "NEW WESTMINSTER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -122.9117,
+          49.20015
+        ],
+        "type": "Point"
+      },
+      "id": "9d20a643e54678dbbdd910b273bdbc21"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GOODNESS ME COMMISSARY",
+        "Address": "37 WOODYATT DR.",
+        "City": "BRANTFORD",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.23631,
+          43.1716
+        ],
+        "type": "Point"
+      },
+      "id": "9ea6b23f9f5795f937d0ccb878e5591f"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FRES502 - FRESON BROS C O FRESH FOR",
+        "Address": "9910-69 AVENUE NW",
+        "City": "EDMONTON",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -113.48773,
+          53.50634
+        ],
+        "type": "Point"
+      },
+      "id": "a228ba6108c30d43081442e691462784"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLAJAS - PLANET ORGANIC #7 (EDM N)",
+        "Address": "12210 JASPER AVE NW",
+        "City": "EDMONTON",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -113.53262,
+          53.54136
+        ],
+        "type": "Point"
+      },
+      "id": "a37b321786460e93a79024458eeb4327"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GOLDSMITH'S ORCHARD MARKET (2169312 ONT. LTD.) 01-105-416291",
+        "Address": "416291 10TH LINE RR1",
+        "City": "CLARKSBURG",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.46883,
+          44.54236
+        ],
+        "type": "Point"
+      },
+      "id": "a3cddd8f86b85c2c872d2169124f72bd"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "MARCHELEO'S MARKETPLACE",
+        "Address": "203-181 EGLINTON AVE. EAST",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.39187,
+          43.70774
+        ],
+        "type": "Point"
+      },
+      "id": "a4fa7ce0f32208234f86b9eb9bb47b59"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "MUSKOKA NORTH GOOD FOOD CO-OP (5-105-1)",
+        "Address": "1 CRESCENT RD.",
+        "City": "HUNTSVILLE",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.24243,
+          45.30945
+        ],
+        "type": "Point"
+      },
+      "id": "a6dad7c0efd7ddd51e8d1ee49f3d6da7"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "POMME - POMME NATURAL MARKET",
+        "Address": "#9-2755 LOUGHEED HWY",
+        "City": "PORT COQUITLAM",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -122.7891,
+          49.27359
+        ],
+        "type": "Point"
+      },
+      "id": "a6ed90aceada3f02170b7b7d79a13e77"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "YORRIV - YORK RIVER MEATS",
+        "Address": "BOX1535",
+        "City": "BANCROFT",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          151.23084,
+          -24.78952
+        ],
+        "type": "Point"
+      },
+      "id": "a8b84b013b9178984b08ab2fd39fbc6e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "QINATEGL - QI NATURAL FOOD QI710 QIN",
+        "Address": "1001 EGLINTON AVE W",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.43141,
+          43.69949
+        ],
+        "type": "Point"
+      },
+      "id": "a9a1268fe1d73cb5148165a871a12d56"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "TEASPAR - TEA SPARROW",
+        "Address": "6688 GRANVILLE ST.",
+        "City": "VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.13918,
+          49.22539
+        ],
+        "type": "Point"
+      },
+      "id": "aab703e212c1fdcbe541c41f0004e25b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BUTCHER BY NATURE",
+        "Address": "515 ANNETTE ST.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.47947,
+          43.66002
+        ],
+        "type": "Point"
+      },
+      "id": "ab58769f4b79acdb81ba7f2de5c8b017"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FLON6396 - FOODLAND #6396 FLON6396",
+        "Address": "795 BALM BEACH RD",
+        "City": "MIDLAND",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.906953,
+          44.735428
+        ],
+        "type": "Point"
+      },
+      "id": "aba1bd303a276aaf8488edf4b2d0608e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FRES516 - FRESON BROS C O FRESH FOR",
+        "Address": "9910-69 AVENUE NW",
+        "City": "EDMONTON",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -113.48773,
+          53.50634
+        ],
+        "type": "Point"
+      },
+      "id": "ac24db5a7da3a915d22bf4ff3e2147e3"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SOBEYS HEAD OFFICE",
+        "Address": "4980 TAHOE BLVD.",
+        "City": "MISSISSAUGA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.61167,
+          43.64307
+        ],
+        "type": "Point"
+      },
+      "id": "ad08e0a79c14e86b9a8df56bf290c57b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "DADDY'S BUTCHER SHOP",
+        "Address": "(blank)",
+        "City": "(blank)",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -77.12498,
+          45.81739
+        ],
+        "type": "Point"
+      },
+      "id": "ae2d6d2f86ad06ab24692c0224519b5c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "STOLICHNI EUROPEAN DELI",
+        "Address": "2280 CARLING AVE.  UNIT#4 (DELIVERY AFTER 10A",
+        "City": "OTTAWA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -75.77438,
+          45.36799
+        ],
+        "type": "Point"
+      },
+      "id": "ae4f064a1cf49fd68def623354442ea2"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOLE FOODS MARKET - YONGE & SHEPPARD - 10289",
+        "Address": "4771 YONGE STREET",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.41038,
+          43.76082
+        ],
+        "type": "Point"
+      },
+      "id": "b104a512ff5a6a36ab58fa87c0e420d4"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BLMEINPC - BUY LOW - MEINHARDT'S",
+        "Address": "609 GRANVILLE ST",
+        "City": "VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.11775,
+          49.2834
+        ],
+        "type": "Point"
+      },
+      "id": "b2bc2844b5617961d26c0f5a892a193d"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "MEDITERRANEAN FOOD STORE",
+        "Address": "1062 BLOOR ST.  WEST",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.43279,
+          43.66068
+        ],
+        "type": "Point"
+      },
+      "id": "b47c0b9794b5064163c7a64212195f88"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOLE FOODS MARKET - OAKVILLE -10226",
+        "Address": "301 CORNWALL ROAD",
+        "City": "OAKVILLE",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.67861,
+          43.45648
+        ],
+        "type": "Point"
+      },
+      "id": "b55accce85eb828dbb43d475d8d16e3b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GOODNESS ME - GUELPH",
+        "Address": "36 WELLINGTON ST. WEST",
+        "City": "GUELPH",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.245102,
+          43.539389
+        ],
+        "type": "Point"
+      },
+      "id": "b55f7ed97d3ea9a158b2cd249bae5ffd"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "COMCROW - COMMUNITY NATURAL FOODS",
+        "Address": "*** GROCERY DEPARTMENT **",
+        "City": "CALGARY",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -114.06301,
+          51.04533
+        ],
+        "type": "Point"
+      },
+      "id": "b5be9d9a285588416bc239e6b0e7c611"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FIEOFGRE - FIELD OF GREENS",
+        "Address": "1 BRUCE WILSON DR.",
+        "City": "PORT CARLING",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.58661,
+          45.118806
+        ],
+        "type": "Point"
+      },
+      "id": "b5e1833e68b5842368da653bbee4670f"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FRESH CITY FARMS SAMOR",
+        "Address": "53 SAMOR RD.",
+        "City": "NORTH YORK",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.45987,
+          43.71718
+        ],
+        "type": "Point"
+      },
+      "id": "b5f3622db287932bf04800f766c1fdb0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLACALN - PLANET ORGANIC #6 (CAL N)",
+        "Address": "UNIT 100- 4625 VARSITY DR",
+        "City": "CALGARY",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -114.15317,
+          51.09286
+        ],
+        "type": "Point"
+      },
+      "id": "b760fcc6c93f29d076e869f7516eae3c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "CEDARS AND COMPANY (BANK ST.)",
+        "Address": "1255 BANK ST.",
+        "City": "OTTAWA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -75.67992,
+          45.39108
+        ],
+        "type": "Point"
+      },
+      "id": "bac591c1a4ffefb706f52975648db071"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FOODSMITHS (PERTH)",
+        "Address": "106 WILSON ST.  WEST",
+        "City": "PERTH",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -76.260051,
+          44.906368
+        ],
+        "type": "Point"
+      },
+      "id": "bb00759cf4ef57b363dd88b326c00251"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SIMLIFE - SIMPLY FOR LIFE SUMMERSID",
+        "Address": "243 WATER STREET",
+        "City": "SUMMERSIDE",
+        "Province": "PE"
+      },
+      "geometry": {
+        "coordinates": [
+          -63.78995,
+          46.39149
+        ],
+        "type": "Point"
+      },
+      "id": "bb4f201caa0e5111cd6a4e5280b8e037"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLAVIC - PLANET ORGANIC #3  VIC",
+        "Address": "109-3995 QUADRA STREET",
+        "City": "VICTORIA",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.36378,
+          48.46943
+        ],
+        "type": "Point"
+      },
+      "id": "bc4974cef95cdbf8ffa67266cd50e622"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOOUNV - WHOLE FOODS MARKET",
+        "Address": "3997 HWY 7",
+        "City": "MARKHAM",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.323828,
+          43.857949
+        ],
+        "type": "Point"
+      },
+      "id": "bc4ddc1064b4233688a76dde65790526"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "McEWAN ENTERPRISES INC.",
+        "Address": "38 KARL FRASER ROAD SHOPS AT DON MILLS",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.345111,
+          43.736281
+        ],
+        "type": "Point"
+      },
+      "id": "bd7549a7019148bd1e76cf1a7c76a0c0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOLE FOODS MARKET - YORKVILLE - 10168",
+        "Address": "87 AVENUE ROAD, BOX 320",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.39918,
+          43.68028
+        ],
+        "type": "Point"
+      },
+      "id": "be1258d38e1e1b1e3347834a1b111282"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "EAT IT FORWARD",
+        "Address": "77 BROCK ST.  WEST",
+        "City": "UXBRIDGE",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.123772,
+          44.108732
+        ],
+        "type": "Point"
+      },
+      "id": "bf78b5151a6a87bb38835bb7ad81c9f7"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GROCERY STORE (WEST END FOOD CO-OP INC.)",
+        "Address": "1229 QUEEN ST.  WEST",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.42971,
+          43.64189
+        ],
+        "type": "Point"
+      },
+      "id": "c0aebec9811bbafac075a0722c17c84c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "MOISSON - LA MOISSON",
+        "Address": "360 SICARD ST",
+        "City": "STE THERESE",
+        "Province": "QC"
+      },
+      "geometry": {
+        "coordinates": [
+          -73.860251,
+          45.643243
+        ],
+        "type": "Point"
+      },
+      "id": "c10c6974d241dd96da25756b8f3863b3"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "COMNATWHS - COMMUNITY NATURAL WHSE",
+        "Address": "3905 32 STREET NE",
+        "City": "CALGARY",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -113.98779,
+          51.08816
+        ],
+        "type": "Point"
+      },
+      "id": "c164db831333703f3ffc492671a15eea"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "REGDADS - REGINA DADS NUTRITION",
+        "Address": "8-425 VICTORIA AVE E",
+        "City": "REGINA",
+        "Province": "SK"
+      },
+      "geometry": {
+        "coordinates": [
+          -104.57769,
+          50.44686
+        ],
+        "type": "Point"
+      },
+      "id": "c196ca5053efa89237b849eea038ee23"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GOODNESS ME - WATERLOO",
+        "Address": "668 ERB ST. WEST., UNIT 2",
+        "City": "WATERLOO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.57481,
+          43.44619
+        ],
+        "type": "Point"
+      },
+      "id": "c2822e229f8cce9f259e672d2da00485"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GOODNESS ME - BARRIE",
+        "Address": "79 PARK PLACE BLVD., UNIT #2",
+        "City": "BARRIE",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.681792,
+          44.339331
+        ],
+        "type": "Point"
+      },
+      "id": "c592d658b5926188f24b98b7daf249b0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOOAVE - WHOLE FOODS MRKT",
+        "Address": "87 AVENUE ROAD",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.39515,
+          43.67202
+        ],
+        "type": "Point"
+      },
+      "id": "c7119f1792af5ae9111270e628227e3c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "ORGANIC GARAGE (JUNCTION)",
+        "Address": "43 JUNCTION RD.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.46455,
+          43.66798
+        ],
+        "type": "Point"
+      },
+      "id": "c72cdb9e3a88765b0c3b77660ccbc439"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GOODNESS ME - BURLINGTON",
+        "Address": "2300 FAIRVIEW ST",
+        "City": "BURLINGTON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.8028,
+          43.34256
+        ],
+        "type": "Point"
+      },
+      "id": "c7e57e0a88b43a858f4893571fac080b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "KELNUT - KELLY S NUTRITION CENTER",
+        "Address": "820 RED RIVER ROAD",
+        "City": "THUNDER BAY",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -89.24687,
+          48.44521
+        ],
+        "type": "Point"
+      },
+      "id": "c8853130d99237a5e5b113ea94fddecc"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "LITTLE BROWN COW (JENNY BUTCHER)",
+        "Address": "234 COCKSHUTT RD.",
+        "City": "BRANTFORD",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.261358,
+          43.077874
+        ],
+        "type": "Point"
+      },
+      "id": "c8ad42b6b8babf17dddc4bf0de33ca28"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLAEDMTEMP - PLANET ORGANIC #1  EDM S",
+        "Address": "7917 104TH ST",
+        "City": "EDMONTON",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -113.49644,
+          53.5155
+        ],
+        "type": "Point"
+      },
+      "id": "c997bf47524b8a2e44fc911c4743f922"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "CANARY & FOX, INC.",
+        "Address": "778 ANNETTE ST.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.48749,
+          43.65863
+        ],
+        "type": "Point"
+      },
+      "id": "ca774d959a37a218c57f2bb530e69457"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GREEMAR - GREEN'S MARKET",
+        "Address": "1978 WEST BROADWAY",
+        "City": "VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.149831,
+          49.26364
+        ],
+        "type": "Point"
+      },
+      "id": "cac708a326d8e6c5aee132d038f45213"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "NUT006 - NUTTERS BULK FOODS # 6",
+        "Address": "#102-920-2ND AVE A NORTH",
+        "City": "LETHBRIDGE",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -112.833262,
+          49.696991
+        ],
+        "type": "Point"
+      },
+      "id": "cbd15646edcb3403b350d2918c79b0b1"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SANAGAN'S MEAT LOCKER LTD.",
+        "Address": "176 BALDWIN ST.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.40079,
+          43.65493
+        ],
+        "type": "Point"
+      },
+      "id": "cd3a649ddfb1422aabaaa4c61292833c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOLE FOODS MARKET - BAYVIEW",
+        "Address": "1860 BAYVIEW AVE.",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.37811,
+          43.71429
+        ],
+        "type": "Point"
+      },
+      "id": "cff0ad4dc4f4c5edb132d30c24713f67"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "VITA019 - VITA HEALTH #19",
+        "Address": "1-3500 PORTAGE AVENUE",
+        "City": "WINNIPEG",
+        "Province": "MB"
+      },
+      "geometry": {
+        "coordinates": [
+          -97.3054,
+          49.88254
+        ],
+        "type": "Point"
+      },
+      "id": "d1125a44bda340c5fd48e0447823a854"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SWEPOTINC - THE SWEET POTATO INC",
+        "Address": "108 VINE AVE UNIT B",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.46841,
+          43.66693
+        ],
+        "type": "Point"
+      },
+      "id": "d180f0022d3d9f9b47c08d96fa8c0464"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SOBEYS #6727 - KANATA (MARCH) 06-105-6727",
+        "Address": "840 MARCH RD.",
+        "City": "KANATA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -75.935143,
+          45.35747
+        ],
+        "type": "Point"
+      },
+      "id": "d216f95d92487cd7297336a24aa02cf6"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "COWAN'S COMMUNITY FRESH (1-105-308)",
+        "Address": "1 - 308 MAIN ST.  EAST",
+        "City": "LISTOWELL",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.950243,
+          43.730232
+        ],
+        "type": "Point"
+      },
+      "id": "d5626ba8d143b67080c22f8781ed12f7"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "HERFOO - HERITAGE FOODS",
+        "Address": "635 2ND ST WEST",
+        "City": "BROOKS",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -111.897274,
+          50.573408
+        ],
+        "type": "Point"
+      },
+      "id": "d5772511c2f53002614bb721e58b6f09"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "ROWE FARMS - THE ANNEX",
+        "Address": "468 BLOOR ST. WEST",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.40933,
+          43.66572
+        ],
+        "type": "Point"
+      },
+      "id": "d5d07a6d73c6fc1f0e8a589d095cbd80"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "MOTNAT - MOTHER NATURES",
+        "Address": "TARASOFF ENTERPRISES INC",
+        "City": "CASTLEGAR",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -117.65424,
+          49.29624
+        ],
+        "type": "Point"
+      },
+      "id": "d897c1549cd400f60de861e78e7eb1e4"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLAVIC - PLANET ORGANIC #3 (VIC)",
+        "Address": "109-3995 QUADRA STREET",
+        "City": "VICTORIA",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.36378,
+          48.46943
+        ],
+        "type": "Point"
+      },
+      "id": "d9095ea3b05e477fa0995dc42dc2611f"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BLACK ANGUS FINE MEATS & GAME MUSKOKA (MACTIER) 5-105-21",
+        "Address": "360 REVUS  AVE UNIT 10",
+        "City": "MISSISSAUGA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.57653,
+          43.5652
+        ],
+        "type": "Point"
+      },
+      "id": "db7149fad4ae2613e9beb8b297a2b9d6"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "TIMHEALTH - TIMMINS HEALTH FOOD",
+        "Address": "CENTRE",
+        "City": "TIMMINS",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -81.35888,
+          48.48118
+        ],
+        "type": "Point"
+      },
+      "id": "dcfde3bf4aaf471025a4c2b9d5ff789a"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "QI NATURAL FOODS (EGLINTON AVE.)",
+        "Address": "1001 EGLINTON AVE.  WEST",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.43141,
+          43.69949
+        ],
+        "type": "Point"
+      },
+      "id": "de338fb0a225304e74e2485bee4d915b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "COMFREFOO - COMMISSO'S FRESH FOODS",
+        "Address": "6161 THORLD STONE RD",
+        "City": "NIAGARA FALLS",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.09746,
+          43.11599
+        ],
+        "type": "Point"
+      },
+      "id": "de8f5176d83f31ae24e7d35c9ca34a62"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "OLIHEA - OLIVER HEALTH FOODS INC",
+        "Address": "107 2045 MAYOR MAGRATH DR",
+        "City": "LETHBRIDGE",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -112.799339,
+          49.672094
+        ],
+        "type": "Point"
+      },
+      "id": "e02720c7a7ced4e3854a77ea24676576"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PAPFOO - PAPILLON BULK FOODS",
+        "Address": "313 BOUL ST JEAN",
+        "City": "POINTE CLAIRE",
+        "Province": "QC"
+      },
+      "geometry": {
+        "coordinates": [
+          -73.8162,
+          45.445708
+        ],
+        "type": "Point"
+      },
+      "id": "e15a7bea53f2f28109e87ec44d7b2de3"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "HIGHLAND FARMS - MISSISSAUGA",
+        "Address": "50 MATHESON BLVD. EAST",
+        "City": "MISSISSAUGA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.669015,
+          43.620469
+        ],
+        "type": "Point"
+      },
+      "id": "e39ea623de04c093202e81e6160bd00e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BLUORG - BLUSHLANE ORGANIC ORCHARD",
+        "Address": "ADD ON",
+        "City": "KEREMEOS",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -119.82413,
+          49.20514
+        ],
+        "type": "Point"
+      },
+      "id": "e4a2039dc60829822d4a2aeceafb62eb"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SANECO - SANTE ECOLOCO",
+        "Address": "2155 MACKAY",
+        "City": "MONTREAL",
+        "Province": "QC"
+      },
+      "geometry": {
+        "coordinates": [
+          -73.58007,
+          45.49749
+        ],
+        "type": "Point"
+      },
+      "id": "e4abfefae3022fa3acb0fafe86a01315"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GREEMAR - GREEN S MARKET",
+        "Address": "1978 WEST BROADWAY",
+        "City": "VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.149831,
+          49.26364
+        ],
+        "type": "Point"
+      },
+      "id": "e5c1a1ae8513a8de26f6c7bb1daa5b6b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PARISNAT - PARIS NATURAL FOODS",
+        "Address": "1500 PARIS ST",
+        "City": "SUDBURY",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.99958,
+          46.46198
+        ],
+        "type": "Point"
+      },
+      "id": "e9b30f205fa7b347378f1f2894b951ea"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "MARMEA - MARKET FRESH MEAT & PROD",
+        "Address": "10 PAISLEY RD",
+        "City": "GUELPH",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -80.26787,
+          43.5372
+        ],
+        "type": "Point"
+      },
+      "id": "e9d3b103249da0e97c86237a318c070e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "RAISE THE ROOT ORGANIC MARKET INC.",
+        "Address": "1164 QUEEN ST.  EAST",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.33254,
+          43.66294
+        ],
+        "type": "Point"
+      },
+      "id": "e9daf54d44397e45f8c4fbf7929b9ffe"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FITORG - FIT ORGANIX INC",
+        "Address": "732 BROWNS LINE",
+        "City": "ETOBICOKE",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.548045,
+          43.607803
+        ],
+        "type": "Point"
+      },
+      "id": "ea1b2af40bcf0eaee8469ffee3b0b776"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SUMMERHILL MARKET 466 - MT. PLEASANT",
+        "Address": "1054 MT. PLEASANT ROAD",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.3931,
+          43.71561
+        ],
+        "type": "Point"
+      },
+      "id": "ead9d99a28424bbb166ee1c158e169eb"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "SUESPROWOR - SUE'S PRODUCE WORLD LTD.",
+        "Address": "205 DON HEAD VILLAGE BLVD",
+        "City": "RICHMOND HILL",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.45831,
+          43.86621
+        ],
+        "type": "Point"
+      },
+      "id": "eaf3f673fac1a08f68440f49ea13e184"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "HOMMARJUI - HOMEGROWN MARKET/JUICE BA",
+        "Address": "320 BROADWAY STREET",
+        "City": "NAKUSP",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -117.80245,
+          50.23884
+        ],
+        "type": "Point"
+      },
+      "id": "ee04ca76f087cc9ea3abb54ff5d9cebf"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "COSFOORIA - COSTA FOODATERIA LTD",
+        "Address": "223 COLUMBIA STREET",
+        "City": "SCHREIBER",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -87.266414,
+          48.805036
+        ],
+        "type": "Point"
+      },
+      "id": "f0dc8529312f9f0c4dfb855ddd27aaf4"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "TOUALI - LE TOURNESOL ALIMENTS NAT",
+        "Address": "1251 BEAUBIEN E",
+        "City": "MONTREAL",
+        "Province": "QC"
+      },
+      "geometry": {
+        "coordinates": [
+          -73.60041,
+          45.53952
+        ],
+        "type": "Point"
+      },
+      "id": "f19c2a58cc8b4dd699d96043cf31078e"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "WHOFOOSPD - WHOLE FOODS MARKET",
+        "Address": "4771 YONGE STREET",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.41038,
+          43.76082
+        ],
+        "type": "Point"
+      },
+      "id": "f24076c3fb213cc60ccf81aa8e5fe79f"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "MEINAMBLE - MEINHARDT - AMBLESIDE",
+        "Address": "A DIV OF BUY-LOW FOODS LP",
+        "City": "WEST VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.23788,
+          49.41379
+        ],
+        "type": "Point"
+      },
+      "id": "f5e5023cb43dc089ea62f2f3143f6d53"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FIELD OF GREENS INC.",
+        "Address": "1 BRUCE WILSON DR. (HWY 118)",
+        "City": "PORT CARLING",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.58661,
+          45.118806
+        ],
+        "type": "Point"
+      },
+      "id": "f6deabb7c5b48a97a290ddc734a87950"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "VITA013 - VITA HEALTH #13(KILDONAN)",
+        "Address": "710 - 1615  REGENT AVENUE",
+        "City": "WINNIPEG",
+        "Province": "MB"
+      },
+      "geometry": {
+        "coordinates": [
+          -97.06968,
+          49.89922
+        ],
+        "type": "Point"
+      },
+      "id": "f70b03f585a56a1a0f917cbe1d6ea6b5"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLACALN - PLANET ORGANIC #6  CAL N",
+        "Address": "UNIT 100- 4625 VARSITY DR",
+        "City": "CALGARY",
+        "Province": "AB"
+      },
+      "geometry": {
+        "coordinates": [
+          -114.15317,
+          51.09286
+        ],
+        "type": "Point"
+      },
+      "id": "f79450fbf7da429fb3173d95e4e10b14"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "QUARTER MASTER NATURAL FOODS",
+        "Address": "176 WORTLEY RD.",
+        "City": "LONDON",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -81.2523,
+          42.9718
+        ],
+        "type": "Point"
+      },
+      "id": "f8283a539abbc714be04c1cc6143fb73"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PLANHEAD - PLANET ORGANIC #8  MISS",
+        "Address": "170 LAKESHORE ROAD EAST",
+        "City": "MISSISSAUGA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.58044,
+          43.5571
+        ],
+        "type": "Point"
+      },
+      "id": "f88eeeadd20ae076dfbf299b72df74d0"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "CASA MIA DELICATESSEN & FINE FOODS",
+        "Address": "1985 QUEEN ST.  EAST",
+        "City": "TORONTO",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.30012,
+          43.66975
+        ],
+        "type": "Point"
+      },
+      "id": "f9345be2b1aa98183ea317f1062ae0bf"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "BLWOOD - NESTERS MARKET- WOODWARDS",
+        "Address": "333 ABBOTT STREET",
+        "City": "VANCOUVER",
+        "Province": "BC"
+      },
+      "geometry": {
+        "coordinates": [
+          -123.107104,
+          49.282646
+        ],
+        "type": "Point"
+      },
+      "id": "f936baf00426b15929bbe0a8d5ff153b"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "PICFOO - PICONES FOOD MARKET",
+        "Address": "34 KING ST W",
+        "City": "DUNDAS",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.955363,
+          43.266147
+        ],
+        "type": "Point"
+      },
+      "id": "fba6ceb8726bb4ba624ca2171430084a"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "GOODNESS ME - MISSISSAUGA",
+        "Address": "720 BRISTOL RD. WEST",
+        "City": "MISSISSAUGA",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.6793,
+          43.59921
+        ],
+        "type": "Point"
+      },
+      "id": "fd0543070df651360178b81ced98bb9c"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "Address": "FRESH CITY FARMS INC.",
+        "Address": "53 SAMOR RD.",
+        "City": "NORTH YORK",
+        "Province": "ON"
+      },
+      "geometry": {
+        "coordinates": [
+          -79.45987,
+          43.71718
+        ],
+        "type": "Point"
+      },
+      "id": "fe37638ce05c7a1da45537a49b9b1772"
+    }
+  ],
+  "type": "FeatureCollection"
+}
+
+
+  // This adds the data to the map
+  map.on('load', function (e) {
+    // This is where your '.addLayer()' used to be, instead add only the source without styling a layer
+    map.addSource("places", {
+      "type": "geojson",
+      "data": stores
+    });
+    // Initialize the list
+    buildLocationList(stores);
+
+  });
+
+
+    // This is where your interactions with the symbol layer used to be
+  // Now you have interactions with DOM markers instead
+  stores.features.forEach(function(marker, i) {
+    // Create an img element for the marker
+    var el = document.createElement('div');
+    el.id = "marker-" + i;
+    el.className = 'marker';
+    // Add markers to the map at all points
+    new mapboxgl.Marker(el, {offset: [0, 0]})
+        .setLngLat(marker.geometry.coordinates)
+        .addTo(map);
+
+    el.addEventListener('click', function(e){
+        // 1. Fly to the point
+        flyToStore(marker);
+
+        // 2. Close all other popups and display popup for clicked store
+        createPopUp(marker);
+
+        // 3. Highlight listing in sidebar (and remove highlight for all other listings)
+        var activeItem = document.getElementsByClassName('active');
+
+        e.stopPropagation();
+        if (activeItem[0]) {
+           activeItem[0].classList.remove('active');
+        }
+
+        var listing = document.getElementById('listing-' + i);
+        listing.classList.add('active');
+
+    });
+  });
+
+
+  function flyToStore(currentFeature) {
+    map.flyTo({
+        center: currentFeature.geometry.coordinates,
+        zoom: 15
+      });
+  }
+
+  function createPopUp(currentFeature) {
+    var popUps = document.getElementsByClassName('mapboxgl-popup');
+    if (popUps[0]) popUps[0].remove();
+
+
+    var popup = new mapboxgl.Popup({closeOnClick: false})
+          .setLngLat(currentFeature.geometry.coordinates)
+          .setHTML('<h3>Mighty Fine Brine</h3>' +
+            '<h4>' + currentFeature.properties.Address + '</h4>')
+          .addTo(map);
+  }
+
+
+  function buildLocationList(data) {
+    for (i = 0; i < data.features.length; i++) {
+      var currentFeature = data.features[i];
+      var prop = currentFeature.properties;
+
+      var listings = document.getElementById('listings');
+      var listing = listings.appendChild(document.createElement('div'));
+      listing.className = 'item';
+      listing.id = "listing-" + i;
+
+      var link = listing.appendChild(document.createElement('a'));
+      link.href = '#';
+      link.className = 'title';
+      link.dataPosition = i;
+      link.innerHTML = prop.Address;
+
+      var details = listing.appendChild(document.createElement('div'));
+      details.innerHTML = prop.City;
+      if (prop.phone) {
+        details.innerHTML += ' &middot; ' + prop.phoneFormatted;
+      }
+
+
+
+      link.addEventListener('click', function(e){
+        // Update the currentFeature to the store associated with the clicked link
+        var clickedListing = data.features[this.dataPosition];
+
+        // 1. Fly to the point
+        flyToStore(clickedListing);
+
+        // 2. Close all other popups and display popup for clicked store
+        createPopUp(clickedListing);
+
+        // 3. Highlight listing in sidebar (and remove highlight for all other listings)
+        var activeItem = document.getElementsByClassName('active');
+
+        if (activeItem[0]) {
+           activeItem[0].classList.remove('active');
+        }
+        this.parentNode.classList.add('active');
+
+      });
+    }
+  }
+  </script>
+
+</script>
+</html>
